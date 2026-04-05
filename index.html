@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Авто-навигатор</title>
+    <style>
+        :root {
+            --bg: #0f172a;
+            --card-bg: #1e293b;
+            --text: #f1f5f9;
+            --accent: #38bdf8;
+        }
+
+        body {
+            font-family: system-ui, -apple-system, sans-serif;
+            background-color: var(--bg);
+            color: var(--text);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 50px 20px;
+            margin: 0;
+        }
+
+        h1 { font-weight: 300; margin-bottom: 40px; }
+
+        #pages-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 20px;
+            width: 100%;
+            max-width: 900px;
+        }
+
+        .page-link {
+            background: var(--card-bg);
+            padding: 20px;
+            border-radius: 12px;
+            text-decoration: none;
+            color: var(--text);
+            text-align: center;
+            border: 1px solid rgba(255,255,255,0.1);
+            transition: 0.2s;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .page-link:hover {
+            border-color: var(--accent);
+            transform: translateY(-3px);
+            background: #273549;
+        }
+
+        .page-link span {
+            font-size: 0.9rem;
+            word-break: break-all;
+        }
+
+        .icon { font-size: 24px; color: var(--accent); }
+    </style>
+</head>
+<body>
+
+    <h1>Содержимое папки Pages</h1>
+    <div id="pages-grid">Загрузка страниц...</div>
+
+    <script>
+        async function loadPages() {
+            const folderPath = 'pages/';
+            const grid = document.getElementById('pages-grid');
+
+            try {
+                // Пытаемся получить список файлов от сервера
+                const response = await fetch(folderPath);
+                const text = await response.text();
+                
+                // Создаем временный элемент для парсинга HTML, который вернул сервер
+                const div = document.createElement('div');
+                div.innerHTML = text;
+                
+                // Извлекаем все ссылки (тег <a>)
+                const links = Array.from(div.querySelectorAll('a'));
+                
+                grid.innerHTML = ''; // Очищаем текст загрузки
+
+                let count = 0;
+                links.forEach(link => {
+                    const fileName = link.getAttribute('href');
+                    
+                    // Фильтруем только .html файлы и игнорируем системные ссылки
+                    if (fileName.endsWith('.html')) {
+                        count++;
+                        const card = document.createElement('a');
+                        card.className = 'page-link';
+                        card.href = folderPath + fileName;
+                        
+                        // Убираем расширение .html для красоты в названии
+                        const displayTitle = fileName.replace('.html', '').replace(/[-_]/g, ' ');
+                        
+                        card.innerHTML = `
+                            <div class="icon">📄</div>
+                            <span>${displayTitle}</span>
+                        `;
+                        grid.appendChild(card);
+                    }
+                });
+
+                if (count === 0) {
+                    grid.innerHTML = '<p>HTML-файлы в папке /pages не найдены.</p>';
+                }
+
+            } catch (error) {
+                grid.innerHTML = '<p>Ошибка: Чтобы авто-парсинг работал, запустите проект через локальный сервер (Live Server).</p>';
+                console.error('Error fetching folder:', error);
+            }
+        }
+
+        loadPages();
+    </script>
+</body>
+</html>
