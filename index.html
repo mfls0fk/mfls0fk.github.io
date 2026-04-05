@@ -2,123 +2,73 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Авто-навигатор</title>
+    <title>Мои Страницы</title>
     <style>
-        :root {
-            --bg: #0f172a;
-            --card-bg: #1e293b;
-            --text: #f1f5f9;
-            --accent: #38bdf8;
-        }
-
-        body {
-            font-family: system-ui, -apple-system, sans-serif;
-            background-color: var(--bg);
-            color: var(--text);
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            padding: 50px 20px;
-            margin: 0;
-        }
-
-        h1 { font-weight: 300; margin-bottom: 40px; }
-
-        #pages-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-            gap: 20px;
-            width: 100%;
-            max-width: 900px;
-        }
-
-        .page-link {
-            background: var(--card-bg);
-            padding: 20px;
-            border-radius: 12px;
-            text-decoration: none;
-            color: var(--text);
-            text-align: center;
-            border: 1px solid rgba(255,255,255,0.1);
-            transition: 0.2s;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 10px;
-        }
-
-        .page-link:hover {
-            border-color: var(--accent);
-            transform: translateY(-3px);
-            background: #273549;
-        }
-
-        .page-link span {
-            font-size: 0.9rem;
-            word-break: break-all;
-        }
-
-        .icon { font-size: 24px; color: var(--accent); }
+        body { font-family: sans-serif; background: #121212; color: #eee; padding: 50px; text-align: center; }
+        .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 20px; max-width: 800px; margin: 0 auto; }
+        .card { background: #1e1e1e; padding: 20px; border-radius: 10px; text-decoration: none; color: #38bdf8; border: 1px solid #333; transition: 0.2s; }
+        .card:hover { border-color: #38bdf8; background: #252525; transform: translateY(-3px); }
     </style>
 </head>
 <body>
 
-    <h1>Содержимое папки Pages</h1>
-    <div id="pages-grid">Загрузка страниц...</div>
+    <h1>Содержимое /pages</h1>
+    <div id="grid" class="grid">Загрузка...</div>
 
     <script>
-        async function loadPages() {
-            const folderPath = 'pages/';
-            const grid = document.getElementById('pages-grid');
+        // УКАЖИ СВОИ ДАННЫЕ ТУТ
+        const GITHUB_USER = 'mfls0fk'; 
+        const GITHUB_REPO = 'mfls0fk.github.io'; 
+        const FOLDER = 'pages';
+
+        async function init() {
+            const grid = document.getElementById('grid');
+            const isLocal = window.location.protocol === 'file:';
+            const isGithub = window.location.hostname.includes('github.io');
+
+            if (isLocal) {
+                grid.innerHTML = '<p style="color:orange">Ошибка CORS! <br> Файлы нельзя смотреть просто двойным кликом. <br> Используйте Live Server в VS Code или Python сервер.</p>';
+                return;
+            }
 
             try {
-                // Пытаемся получить список файлов от сервера
-                const response = await fetch(folderPath);
-                const text = await response.text();
+                let files = [];
                 
-                // Создаем временный элемент для парсинга HTML, который вернул сервер
-                const div = document.createElement('div');
-                div.innerHTML = text;
-                
-                // Извлекаем все ссылки (тег <a>)
-                const links = Array.from(div.querySelectorAll('a'));
-                
-                grid.innerHTML = ''; // Очищаем текст загрузки
-
-                let count = 0;
-                links.forEach(link => {
-                    const fileName = link.getAttribute('href');
-                    
-                    // Фильтруем только .html файлы и игнорируем системные ссылки
-                    if (fileName.endsWith('.html')) {
-                        count++;
-                        const card = document.createElement('a');
-                        card.className = 'page-link';
-                        card.href = folderPath + fileName;
-                        
-                        // Убираем расширение .html для красоты в названии
-                        const displayTitle = fileName.replace('.html', '').replace(/[-_]/g, ' ');
-                        
-                        card.innerHTML = `
-                            <div class="icon">📄</div>
-                            <span>${displayTitle}</span>
-                        `;
-                        grid.appendChild(card);
-                    }
-                });
-
-                if (count === 0) {
-                    grid.innerHTML = '<p>HTML-файлы в папке /pages не найдены.</p>';
+                if (isGithub) {
+                    // Тянем список файлов через GitHub API
+                    const res = await fetch(`https://api.github.com/repos/${GITHUB_USER}/${GITHUB_REPO}/contents/${FOLDER}`);
+                    const data = await res.json();
+                    files = data.filter(f => f.name.endsWith('.html')).map(f => f.name);
+                } else {
+                    // Локальный сервер (например, Live Server или Python)
+                    const res = await fetch(`./${FOLDER}/`);
+                    const html = await res.text();
+                    const parser = new DOMParser();
+                    const doc = parser.parseFromString(html, 'text/html');
+                    files = Array.from(doc.querySelectorAll('a'))
+                                 .map(a => a.getAttribute('href'))
+                                 .filter(href => href.endsWith('.html'));
                 }
 
-            } catch (error) {
-                grid.innerHTML = '<p>Ошибка: Чтобы авто-парсинг работал, запустите проект через локальный сервер (Live Server).</p>';
-                console.error('Error fetching folder:', error);
+                grid.innerHTML = '';
+                files.forEach(fileName => {
+                    // Очистка имени от лишних путей (убираем /pages/ если оно прилетело в ссылке)
+                    const pureName = fileName.split('/').pop();
+                    const card = document.createElement('a');
+                    card.className = 'card';
+                    // Ссылка всегда строится ОТНОСИТЕЛЬНО корня: pages/имя_файла.html
+                    card.href = `./${FOLDER}/${pureName}`;
+                    card.innerHTML = `📄 ${pureName.replace('.html', '')}`;
+                    grid.appendChild(card);
+                });
+
+            } catch (e) {
+                grid.innerHTML = 'Ошибка загрузки файлов.';
+                console.error(e);
             }
         }
 
-        loadPages();
+        init();
     </script>
 </body>
 </html>
