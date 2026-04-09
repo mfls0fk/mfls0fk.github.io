@@ -2,60 +2,21 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta charset="UTF-8">
     <title>Свердловская область</title>
     <style>
-        /* Базовые настройки для предотвращения выхода элементов за пределы экрана */
-        * { 
-            box-sizing: border-box; 
-        }
-        
         body { 
-            /* Современные системные шрифты (отлично выглядят и на iOS, и на Android) */
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; 
             line-height: 1.6; 
-            max-width: 800px; 
-            margin: 0 auto; 
-            padding: 20px; 
+            max-width: 850px; 
+            margin: 40px auto; 
+            padding: 0 20px; 
             color: #333;
         }
-        
-        /* Делаем все изображения адаптивными */
-        img {
-            max-width: 100%;
-            height: auto;
-            display: block; /* Убирает лишний отступ под картинкой */
-        }
-        
-        /* Адаптивные таблицы (появится скролл, если таблица шире экрана) */
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            display: block;
-            overflow-x: auto;
-            white-space: nowrap;
-        }
-        th, td {
-            border: 1px solid #ddd;
-            padding: 8px;
-        }
-        
-        /* Чтобы длинные ссылки или слова не ломали верстку на узких экранах */
-        p, a, span, div {
-            word-wrap: break-word;
-            overflow-wrap: break-word;
-        }
-        
-        /* Небольшая оптимизация для совсем маленьких экранов */
-        @media (max-width: 600px) {
-            body {
-                padding: 15px; /* Уменьшаем боковые отступы на телефонах */
-            }
-            h1 {
-                font-size: 1.5em; /* Слегка уменьшаем главный заголовок */
-            }
-        }
+        img { max-width: 100%; height: auto; display: block; margin: 1em 0; }
+        h1 { border-bottom: 2px solid #eaecef; padding-bottom: 0.3em; color: #24292e; }
+        table { border-collapse: collapse; width: 100%; margin: 1em 0; }
+        table td, table th { border: 1px solid #dfe2e5; padding: 6px 13px; }
     </style>
 </head>
 <body>
